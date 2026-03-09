@@ -110,5 +110,10 @@ namespace PresenterShield.Services
             NativeMethods.SetWindowPos(window.Handle, NativeMethods.HWND_NOTOPMOST, 0, 0, 0, 0,
                 NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE);
         }
+
+        public void UpdateOpacity(WindowModel window, byte opacity)
+        {
+            NativeMethods.SetLayeredWindowAttributes(window.Handle, 0, opacity, NativeMethods.LWA_ALPHA);
+        }
     }
 }

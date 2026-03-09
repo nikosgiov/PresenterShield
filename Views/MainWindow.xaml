@@ -30,37 +30,35 @@
         <ListBox Grid.Row="1" ItemsSource="{Binding Windows}" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#ccc">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <CheckBox IsChecked="{Binding IsPrivate}" Content="{Binding Title}" 
-                              IsEnabled="{Binding DataContext.IsSessionActive, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource InverseBoolConverter}}" 
-                              Margin="2,4"/>
+                    <Grid Margin="2,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="100" />
+                        </Grid.ColumnDefinitions>
+                        <CheckBox Grid.Column="0" IsChecked="{Binding IsPrivate}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="10,0,10,0" TextTrimming="CharacterEllipsis" />
+                        <Slider Grid.Column="2" Minimum="0" Maximum="255" Value="{Binding Opacity}" VerticalAlignment="Center" 
+                                Visibility="{Binding IsPrivate, Converter={StaticResource BoolToVisibilityConverter}}" />
+                    </Grid>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,20">
             <TextBlock Text="Overlay Opacity:" VerticalAlignment="Center" Margin="0,0,10,0" Width="100"/>
-            <Slider Minimum="0" Maximum="255" Value="{Binding OverlayOpacity}" Width="250" VerticalAlignment="Center" 
-                    IsEnabled="{Binding IsSessionActive, Converter={StaticResource InverseBoolConverter}}" />
+            <Slider Minimum="0" Maximum="255" Value="{Binding OverlayOpacity}" Width="250" VerticalAlignment="Center" />
             <TextBlock Text="{Binding OverlayOpacity}" VerticalAlignment="Center" Margin="10,0,0,0" />
         </StackPanel>
 
         <Grid Grid.Row="3">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            
-            <Button Grid.Column="0" Content="Start Session" Command="{Binding StartSessionCommand}" 
+            <Button Content="Start Session" Command="{Binding StartSessionCommand}" 
                     Visibility="{Binding IsSessionActive, Converter={StaticResource InverseBoolToVisibilityConverter}}" 
-                    Margin="0,0,10,0" Height="35" Background="#0078D7" Foreground="White" FontWeight="Bold" BorderThickness="0" />
+                    Height="35" Background="#0078D7" Foreground="White" FontWeight="Bold" BorderThickness="0" />
             
-            <Button Grid.Column="0" Content="Stop Session" Command="{Binding StopSessionCommand}" 
+            <Button Content="Stop Session" Command="{Binding StopSessionCommand}" 
                     Visibility="{Binding IsSessionActive, Converter={StaticResource BoolToVisibilityConverter}}" 
-                    Margin="0,0,10,0" Height="35" Background="#D13438" Foreground="White" FontWeight="Bold" BorderThickness="0" />
-            
-            <Button Grid.Column="1" Content="Refresh List" Command="{Binding RefreshWindowsCommand}" 
-                    IsEnabled="{Binding IsSessionActive, Converter={StaticResource InverseBoolConverter}}" 
-                    Margin="10,0,0,0" Height="35" Background="#E5E5E5" BorderThickness="0" />
+                    Height="35" Background="#D13438" Foreground="White" FontWeight="Bold" BorderThickness="0" />
         </Grid>
     </Grid>
 </Window>
