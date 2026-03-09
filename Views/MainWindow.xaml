@@ -5,7 +5,6 @@
         xmlns:helpers="clr-namespace:PresenterShield.Helpers"
         Title="PresenterShield" Height="450" Width="500"
         WindowStartupLocation="CenterScreen"
-        ShowInTaskbar="False"
         Icon="pack://application:,,,/Assets/presenterShield.png">
     <Window.DataContext>
         <viewmodels:MainViewModel />
