@@ -1,4 +1,4 @@
-﻿<Application x:Class="PresenterShield.App"
+<Application x:Class="PresenterShield.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:PresenterShield"
@@ -13,7 +13,8 @@
         <tb:TaskbarIcon x:Key="NotifyIcon"
                         ToolTipText="PresenterShield"
                         IconSource="pack://application:,,,/Assets/presenterShield.png"
-                        ContextMenu="{StaticResource TrayMenu}">
+                        ContextMenu="{StaticResource TrayMenu}"
+                        TrayMouseDoubleClick="NotifyIcon_TrayMouseDoubleClick">
         </tb:TaskbarIcon>
     </Application.Resources>
 </Application>

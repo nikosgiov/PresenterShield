@@ -16,6 +16,9 @@ namespace PresenterShield.Models
         [ObservableProperty]
         private bool isPrivate;
 
+        [ObservableProperty]
+        private byte opacity = 128;
+
         public uint ProcessId { get; }
 
         public WindowModel(IntPtr handle, uint processId, string title, string className)

@@ -18,5 +18,12 @@ namespace PresenterShield.Views
             var hwnd = new WindowInteropHelper(this).Handle;
             NativeMethods.SetWindowDisplayAffinity(hwnd, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
         }
+
+        protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
+            base.OnClosing(e);
+        }
     }
 }
