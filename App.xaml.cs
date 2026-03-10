@@ -1,4 +1,4 @@
-﻿using Hardcodet.Wpf.TaskbarNotification;
+using Hardcodet.Wpf.TaskbarNotification;
 using System.Drawing;
 using System.Windows;
 
@@ -50,6 +50,28 @@ namespace PresenterShield
             }
             
             MainWindow.Activate();
+        }
+
+        private void NotifyIcon_TrayMouseDoubleClick(object sender, RoutedEventArgs e)
+        {
+            if (MainWindow == null)
+            {
+                MainWindow = new Views.MainWindow();
+            }
+
+            if (MainWindow.IsVisible)
+            {
+                MainWindow.Hide();
+            }
+            else
+            {
+                MainWindow.Show();
+                if (MainWindow.WindowState == WindowState.Minimized)
+                {
+                    MainWindow.WindowState = WindowState.Normal;
+                }
+                MainWindow.Activate();
+            }
         }
 
         private void Exit_Click(object sender, RoutedEventArgs e)

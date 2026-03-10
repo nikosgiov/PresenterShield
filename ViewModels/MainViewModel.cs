@@ -21,9 +21,6 @@ namespace PresenterShield.ViewModels
         private ObservableCollection<WindowModel> windows = new();
 
         [ObservableProperty]
-        private byte overlayOpacity = 128; // 50% opacity default
-
-        [ObservableProperty]
         private bool isSessionActive;
 
         public MainViewModel()
@@ -37,17 +34,6 @@ namespace PresenterShield.ViewModels
             _refreshTimer.Interval = TimeSpan.FromSeconds(2);
             _refreshTimer.Tick += (s, e) => RefreshWindows();
             _refreshTimer.Start();
-        }
-
-        partial void OnOverlayOpacityChanged(byte value)
-        {
-            if (IsSessionActive)
-            {
-                foreach (var w in Windows.Where(w => w.IsPrivate && !w.UseCustomOpacity))
-                {
-                    _windowService.UpdateOpacity(w, value);
-                }
-            }
         }
 
         private void RefreshWindows()
@@ -83,7 +69,7 @@ namespace PresenterShield.ViewModels
 
                     if (IsSessionActive && w.IsPrivate)
                     {
-                        _windowService.ApplyPrivacyOverlay(w, w.UseCustomOpacity ? w.Opacity : OverlayOpacity);
+                        _windowService.ApplyPrivacyOverlay(w, w.Opacity);
                     }
                 }
             }
@@ -100,7 +86,7 @@ namespace PresenterShield.ViewModels
                         _savedPrivateWindows.Add(window.Title);
                         if (IsSessionActive)
                         {
-                            _windowService.ApplyPrivacyOverlay(window, window.UseCustomOpacity ? window.Opacity : OverlayOpacity);
+                            _windowService.ApplyPrivacyOverlay(window, window.Opacity);
                         }
                     }
                     else
@@ -113,11 +99,11 @@ namespace PresenterShield.ViewModels
                     }
                     _configService.SavePrivateWindowNames(_savedPrivateWindows);
                 }
-                else if (e.PropertyName == nameof(WindowModel.Opacity) || e.PropertyName == nameof(WindowModel.UseCustomOpacity))
+                else if (e.PropertyName == nameof(WindowModel.Opacity))
                 {
                     if (IsSessionActive && window.IsPrivate)
                     {
-                        _windowService.UpdateOpacity(window, window.UseCustomOpacity ? window.Opacity : OverlayOpacity);
+                        _windowService.UpdateOpacity(window, window.Opacity);
                     }
                 }
             }
@@ -136,7 +122,7 @@ namespace PresenterShield.ViewModels
 
             foreach (var w in privateWindows)
             {
-                _windowService.ApplyPrivacyOverlay(w, w.UseCustomOpacity ? w.Opacity : OverlayOpacity);
+                _windowService.ApplyPrivacyOverlay(w, w.Opacity);
             }
 
             IsSessionActive = true;
