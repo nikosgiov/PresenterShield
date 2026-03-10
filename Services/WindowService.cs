@@ -1,13 +1,37 @@
 using PresenterShield.Models;
+using PresenterShield.Views;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
+using System.Windows.Threading;
 
 namespace PresenterShield.Services
 {
     public class WindowService
     {
+        private readonly ConcurrentDictionary<IntPtr, BorderWindow> _activeBorders = new();
+        private readonly DispatcherTimer _borderUpdateTimer;
+
+        public WindowService()
+        {
+            _borderUpdateTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(16) // roughly 60fps
+            };
+            _borderUpdateTimer.Tick += BorderUpdateTimer_Tick;
+        }
+
+        private void BorderUpdateTimer_Tick(object? sender, EventArgs e)
+        {
+            foreach (var border in _activeBorders.Values.ToList())
+            {
+                // Ensure the update runs on the UI thread
+                border.Dispatcher.InvokeAsync(() => border.UpdatePosition());
+            }
+        }
         public List<WindowModel> GetOpenWindows()
         {
             var windows = new List<WindowModel>();
@@ -86,6 +110,22 @@ namespace PresenterShield.Services
             // 4. Set Always On Top
             NativeMethods.SetWindowPos(window.Handle, NativeMethods.HWND_TOPMOST, 0, 0, 0, 0,
                 NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_SHOWWINDOW);
+
+            // 5. Apply the Border Outline
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (!_activeBorders.ContainsKey(window.Handle))
+                {
+                    var border = new BorderWindow(window.Handle);
+                    border.Show();
+                    _activeBorders[window.Handle] = border;
+
+                    if (!_borderUpdateTimer.IsEnabled)
+                    {
+                        _borderUpdateTimer.Start();
+                    }
+                }
+            });
         }
 
         public void RemovePrivacyOverlay(WindowModel window)
@@ -109,11 +149,31 @@ namespace PresenterShield.Services
             // 3. Remove Always On Top
             NativeMethods.SetWindowPos(window.Handle, NativeMethods.HWND_NOTOPMOST, 0, 0, 0, 0,
                 NativeMethods.SWP_NOMOVE | NativeMethods.SWP_NOSIZE | NativeMethods.SWP_NOACTIVATE);
+
+            // 4. Remove the Border Outline
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (_activeBorders.TryRemove(window.Handle, out var border))
+                {
+                    border.Close();
+                }
+
+                if (!_activeBorders.Any())
+                {
+                    _borderUpdateTimer.Stop();
+                }
+            });
         }
 
         public void UpdateOpacity(WindowModel window, byte opacity)
         {
             NativeMethods.SetLayeredWindowAttributes(window.Handle, 0, opacity, NativeMethods.LWA_ALPHA);
+        }
+
+        public void BringWindowToFront(WindowModel window)
+        {
+            NativeMethods.ShowWindow(window.Handle, NativeMethods.SW_RESTORE);
+            NativeMethods.SetForegroundWindow(window.Handle);
         }
     }
 }

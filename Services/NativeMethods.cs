@@ -6,6 +6,23 @@ namespace PresenterShield.Services
 {
     public static class NativeMethods
     {
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out RECT pvAttribute, int cbAttribute);
+
+        public const int DWMWA_EXTENDED_FRAME_BOUNDS = 9;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
+
         public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll")]
@@ -69,6 +86,8 @@ namespace PresenterShield.Services
         public const long WS_EX_APPWINDOW = 0x00040000L;
         public const long WS_EX_TOOLWINDOW = 0x00000080L;
         public const long WS_EX_LAYERED = 0x00080000L;
+        public const long WS_EX_TRANSPARENT = 0x00000020L;
+        public const long WS_EX_NOACTIVATE = 0x08000000L;
 
         // Layered Window Attributes for opacity
         [DllImport("user32.dll")]
@@ -88,5 +107,13 @@ namespace PresenterShield.Services
         public const uint SWP_NOMOVE = 0x0002;
         public const uint SWP_NOACTIVATE = 0x0010;
         public const uint SWP_SHOWWINDOW = 0x0040;
+
+        [DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        public const int SW_RESTORE = 9;
     }
 }

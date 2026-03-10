@@ -5,6 +5,7 @@
         xmlns:helpers="clr-namespace:PresenterShield.Helpers"
         Title="PresenterShield" Height="450" Width="500"
         WindowStartupLocation="CenterScreen"
+        Topmost="True"
         Icon="pack://application:,,,/Assets/presenterShield.png">
     <Window.DataContext>
         <viewmodels:MainViewModel />
@@ -26,18 +27,22 @@
 
         <TextBlock Text="Select Windows to Keep Private:" FontWeight="SemiBold" FontSize="14" Margin="0,0,0,10" />
 
-        <ListBox Grid.Row="1" ItemsSource="{Binding Windows}" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#ccc">
+        <ListBox Grid.Row="1" ItemsSource="{Binding Windows}" Margin="0,0,0,15" BorderThickness="1" BorderBrush="#ccc" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid Margin="2,4">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="35" />
                             <ColumnDefinition Width="100" />
                         </Grid.ColumnDefinitions>
                         <CheckBox Grid.Column="0" IsChecked="{Binding IsPrivate}" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="10,0,10,0" TextTrimming="CharacterEllipsis" />
-                        <Slider Grid.Column="2" Minimum="0" Maximum="255" Value="{Binding Opacity}" VerticalAlignment="Center" 
+                        <TextBlock Grid.Column="1" Text="{Binding Title}" VerticalAlignment="Center" Margin="10,0,10,0" TextTrimming="CharacterEllipsis" ToolTip="{Binding Title}" />
+                        <Button Grid.Column="2" Content="👁️" Command="{Binding DataContext.BringToFrontCommand, RelativeSource={RelativeSource AncestorType=Window}}" 
+                                CommandParameter="{Binding}" Visibility="{Binding IsPrivate, Converter={StaticResource BoolToVisibilityConverter}}"
+                                Margin="0,0,5,0" Background="Transparent" BorderThickness="0" ToolTip="Bring to front" />
+                        <Slider Grid.Column="3" Minimum="0" Maximum="255" Value="{Binding Opacity}" VerticalAlignment="Center" 
                                 Visibility="{Binding IsPrivate, Converter={StaticResource BoolToVisibilityConverter}}" />
                     </Grid>
                 </DataTemplate>

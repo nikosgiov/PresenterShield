@@ -154,5 +154,14 @@ namespace PresenterShield.ViewModels
 
             IsSessionActive = false;
         }
+
+        [RelayCommand]
+        private void BringToFront(WindowModel window)
+        {
+            if (window != null)
+            {
+                _windowService.BringWindowToFront(window);
+            }
+        }
     }
 }
