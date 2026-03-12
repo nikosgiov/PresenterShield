@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace PresenterShield
 {
-    public partial class App : Application
+    public partial class App : System.Windows.Application
     {
         private TaskbarIcon? _notifyIcon;
         private static System.Threading.Mutex? _mutex = null;
@@ -19,7 +19,7 @@ namespace PresenterShield
             if (!createdNew)
             {
                 // App is already running
-                MessageBox.Show("An instance of PresenterShield is already running.", "PresenterShield", MessageBoxButton.OK, MessageBoxImage.Information);
+                System.Windows.MessageBox.Show("An instance of PresenterShield is already running.", "PresenterShield", MessageBoxButton.OK, MessageBoxImage.Information);
                 Current.Shutdown();
                 return;
             }
