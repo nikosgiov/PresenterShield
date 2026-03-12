@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PresenterShield.Models;
 using PresenterShield.Services;
+using PresenterShield.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,6 +15,8 @@ namespace PresenterShield.ViewModels
     {
         private readonly WindowService _windowService;
         private readonly ConfigService _configService;
+        private readonly ScreenMirrorService _mirrorService;
+        private MirrorWindow? _mirrorWindow;
         private HashSet<string> _savedPrivateWindows;
         private DispatcherTimer _refreshTimer;
 
@@ -23,10 +26,15 @@ namespace PresenterShield.ViewModels
         [ObservableProperty]
         private bool isSessionActive;
 
+        [ObservableProperty]
+        private bool isMirroringActive;
+
         public MainViewModel()
         {
             _windowService = new WindowService();
             _configService = new ConfigService();
+            _mirrorService = new ScreenMirrorService();
+            _mirrorService.MirroringError += OnMirroringError;
             _savedPrivateWindows = _configService.LoadPrivateWindowNames();
             RefreshWindows();
 
@@ -34,6 +42,18 @@ namespace PresenterShield.ViewModels
             _refreshTimer.Interval = TimeSpan.FromSeconds(2);
             _refreshTimer.Tick += (s, e) => RefreshWindows();
             _refreshTimer.Start();
+        }
+
+        private void OnMirroringError(string message)
+        {
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                if (IsMirroringActive)
+                {
+                    ToggleMirroring(); // Stop and cleanup
+                }
+                System.Windows.MessageBox.Show(message, "Screen Mirroring Error", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            });
         }
 
         private void RefreshWindows()
@@ -139,6 +159,40 @@ namespace PresenterShield.ViewModels
             }
 
             IsSessionActive = false;
+        }
+
+        [RelayCommand]
+        private void ToggleMirroring()
+        {
+            if (IsMirroringActive)
+            {
+                // Stop Mirroring
+                _mirrorService.StopMirroring();
+                _mirrorWindow?.Close();
+                _mirrorWindow = null;
+                IsMirroringActive = false;
+            }
+            else
+            {
+                // Start Mirroring
+                var screens = System.Windows.Forms.Screen.AllScreens;
+                if (screens.Length > 1)
+                {
+                    // Find the first non-primary screen to project onto
+                    var targetScreen = screens.FirstOrDefault(s => !s.Primary) ?? screens[1];
+                    
+                    _mirrorWindow = new MirrorWindow(_mirrorService, targetScreen);
+                    _mirrorWindow.Show();
+                    
+                    // Start capturing the primary screen (Display 0)
+                    _mirrorService.StartMirroring(0);
+                    IsMirroringActive = true;
+                }
+                else
+                {
+                    System.Windows.MessageBox.Show("A secondary monitor is required for screen mirroring to project onto.", "No Secondary Display Detected", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                }
+            }
         }
 
         [RelayCommand]

@@ -18,6 +18,7 @@
         <helpers:InverseBoolConverter x:Key="InverseBoolConverter" />
         <helpers:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <helpers:BoolToStringConverter x:Key="BoolToStringConverter" />
         
         <!-- Modern Windows 11 ListBoxItem Style (Removes harsh blue highlight) -->
         <Style TargetType="ListBoxItem">
@@ -134,13 +135,24 @@
         </Border>
 
         <Grid Grid.Row="2">
-            <Button Content="Start Shield Session" Style="{StaticResource PrimaryButton}" 
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="10" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="Start Shield Session" Style="{StaticResource PrimaryButton}" 
                     Command="{Binding StartSessionCommand}" 
                     Visibility="{Binding IsSessionActive, Converter={StaticResource InverseBoolToVisibilityConverter}}" />
             
-            <Button Content="Stop Shield Session" Style="{StaticResource DestructiveButton}" 
+            <Button Grid.Column="0" Content="Stop Shield Session" Style="{StaticResource DestructiveButton}" 
                     Command="{Binding StopSessionCommand}" 
                     Visibility="{Binding IsSessionActive, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+            <Button Grid.Column="2" 
+                    Content="{Binding IsMirroringActive, Converter={StaticResource BoolToStringConverter}, FallbackValue='Start Secure Mirroring'}" 
+                    Style="{StaticResource PrimaryButton}" 
+                    Command="{Binding ToggleMirroringCommand}" />
         </Grid>
     </Grid>
 </Window>

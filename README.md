@@ -11,6 +11,8 @@
 
 ---
 
+![PresenterShield Banner](Assets/PresenterShieldBanner.png)
+
 ## 📖 The Story Behind PresenterShield
 
 A lot of times I wanted to demonstrate as a TA some code walkthroughs, or I had a presentation in PDF, and I couldn't easily have my presenter notes open without exposing them to the audience when sharing my entire screen.
@@ -19,27 +21,26 @@ When presenting via HDMI, screen share (Zoom, Teams, Meet), or a projector, you 
 
 So, I built **PresenterShield**.
 
-## 🚀 Core Concept
+### 🛡️ Operational Modes
+PresenterShield handles two main scenarios:
 
-PresenterShield creates two parallel "views" of your desktop from a single screen:
+1. **Basic Shielding (Start Shield Session)**: Best for remote meetings (Zoom, Teams, Slack). It applies the privacy overlay directly to your windows. Since these apps capture the "Window" or "Desktop" pipelines, the shellcode-injected affinity flags keep your private windows hidden.
+2. **Hardware Mirroring (Start Secure Mirroring)**: Required when connecting to physical outputs like **HDMI, DisplayPort, or Projectors**. Direct hardware outputs often bypass standard window capture flags. In this mode, PresenterShield mirrors your primary display into a dedicated window. **Note: For this to work, your Windows Projection settings must be set to "Extend", not "Duplicate".**
 
-- **Public View** (What the audience sees): Your full desktop minus any windows you've specifically marked as private.
-- **Private View** (What you see): Everything is visible to you, but your private windows are overlaid with a configurable opacity. You never lose context of what's underneath them.
+### 🔴 Visual Awareness
+Private windows are automatically highlighted with a **subtle red border**. This gives you immediate visual feedback on what is being shielded from the audience, even if you have the opacity set to 100%.
 
-The key distinction from a simple "hide this window" toggle: **private windows remain fully interactive and focus-stable at all times.** You can type into them, scroll them, click through them, and they never drop behind other windows when you interact with something else. You work naturally. You Alt+Tab freely. Your private windows follow you around as persistent overlays. **The audience never sees them.**
+### 💾 Persistent Privacy
+The app remembers your choices. Once you mark a window title as private, PresenterShield will automatically apply the shield and border the next time you open that application.
 
 ---
 
 ## 🛠️ Architecture & Under the Hood
 
-The project is built using:
-- **C#** and **WPF** for the desktop UI.
-- The **MVVM** pattern leveraging `CommunityToolkit.Mvvm` for clean separation between `ViewModels` (e.g., `MainViewModel`) and the underlying `Services`.
-- Direct interaction with the **Win32 API** to achieve the shielding effect.
+The project is built using **C#** and **WPF** on **.NET 10.0**, leveraging `CommunityToolkit.Mvvm` for clean separation.
 
-### 🪄 The Win32 Magic Working Together
-
-These three mechanisms need to work together without breaking each other:
+### Core Technical Mechanisms
+These mechanisms work together to ensure privacy without breaking the user experience:
 
 1. Windows must be **invisible to all capture pipelines** (HDMI out, screen share, OBS).
 2. Windows must remain **fully interactive** regardless of where the user clicks.
@@ -57,18 +58,13 @@ By swapping the target window's extended styles (`GWL_EXSTYLE`), removing `WS_EX
 
 **3. The Always-On-Top Interactive Overlay**
 
-`WS_EX_LAYERED` + `SetLayeredWindowAttributes` controls the window's opacity, turning your private notes into a floating, semi-transparent overlay. `SetWindowPos` with `HWND_TOPMOST` ensures it stays above all other windows regardless of focus changes, so interacting with your editor, browser, or any other window never pushes the overlay behind. It stays put, stays interactive, and stays invisible to the audience.
+`WS_EX_LAYERED` + `SetLayeredWindowAttributes` controls the window's opacity. `SetWindowPos` with `HWND_TOPMOST` ensures it stays above all other windows, so interacting with background apps never pushes the overlay behind. 
+
+**4. DXGI Desktop Duplication (Hardware Mirroring)**
+
+For hardware outputs, standard window affinity flags are bypassed. PresenterShield uses **SharpDX** to interface with the **DXGI Desktop Duplication API**. It captures the primary display at 30+ FPS, filters any "Private" windows out of the texture, and renders the result to a dedicated projection window on the secondary display.
 
 *(All changes are fully reversible when you stop the session.)*
-
-### Why This Is Non-Trivial
-
-Most attempts at this kind of overlay fail in at least one of these ways:
-- The window drops behind when the user clicks elsewhere (Z-order lost on focus change).
-- The window becomes non-interactive once made topmost or transparent.
-- The window briefly flashes on the public view during Alt-Tab or taskbar interactions.
-
-Preventing all three simultaneously requires precise coordination of Z-order management, focus event handling, and the capture pipeline, effectively building a lightweight custom window compositor on top of the standard Windows desktop.
 
 ---
 
@@ -83,19 +79,19 @@ Beyond my initial pain point of TA sessions, PresenterShield is incredibly versa
 
 ---
 
-## ⚙️ How to Build and Run
-
-Due to the application's reliance on memory injection (`ShellcodeInjector.cs`), there are specific requirements to build and run it successfully.
+## 🏗️ How to Build and Run
 
 ### Prerequisites
-- Windows 10 or later.
-- .NET Framework / .NET Core (depending on your build configuration).
-- **Target Platform:** Must be built and run as **x64**. The remote shellcode execution is specifically tailored for 64-bit processes. 32-bit (`x86`) processes are currently bypassed.
+- Windows 10/11.
+- **.NET 10 SDK.**
+- **x64 Architecture:** The shellcode handles 64-bit processes specifically.
 
 ### Building
-1. Clone the repository.
-2. Open `PresenterShield.sln` in Visual Studio.
-3. Ensure the active solution platform is set to **x64**.
-4. Build and Run.
+1. Clone the repo.
+2. Open in Visual Studio.
+3. Set platform to **x64**.
+4. Run as **Administrator** (required for memory injection/process manipulation).
 
-*(Depending on your system configuration, running the application may require **Administrator privileges** to successfully inject into other running processes.)*
+## ❓ Troubleshooting
+**Mirroring brings up a black screen?**  
+Mirroring mode requires a secondary output (HDMI, Projector, or a Virtual Display Driver). If you're on a single monitor, the app will warn you before starting.
